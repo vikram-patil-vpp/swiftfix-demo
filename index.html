@@ -3,135 +3,278 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swift Fix Plumbing</title>
+  <title>Demo Hub | Business Automation Demos</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; color: #222; }
-    
-    nav {
-      background: #1a1a2e;
-      padding: 16px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --accent: #00e5a0;
+      --accent2: #0066ff;
+      --text: #f0f0f0;
+      --muted: #666;
     }
-    nav .logo { color: white; font-size: 22px; font-weight: bold; }
-    nav a { color: #ccc; text-decoration: none; margin-left: 24px; font-size: 15px; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 28px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .logo span { color: var(--accent); }
+
+    .contact-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .contact-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    main {
+      flex: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+      width: 100%;
+    }
 
     .hero {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      color: white;
-      padding: 100px 40px;
-      text-align: center;
-    }
-    .hero h1 { font-size: 48px; margin-bottom: 16px; }
-    .hero p { font-size: 20px; color: #aaa; margin-bottom: 32px; }
-    .hero button {
-      background: #e94560;
-      color: white;
-      border: none;
-      padding: 14px 36px;
-      font-size: 16px;
-      border-radius: 4px;
-      cursor: pointer;
+      margin-bottom: 64px;
     }
 
-    .services {
-      padding: 80px 40px;
-      text-align: center;
-      background: #f9f9f9;
+    .tag {
+      display: inline-block;
+      background: rgba(0, 229, 160, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0, 229, 160, 0.2);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
     }
-    .services h2 { font-size: 32px; margin-bottom: 48px; }
-    .cards {
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    .demos-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .demos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .demo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      text-decoration: none;
+      color: var(--text);
       display: flex;
-      justify-content: center;
-      gap: 24px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 32px 24px;
-      width: 220px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
-    .card .icon { font-size: 36px; margin-bottom: 12px; }
-    .card h3 { font-size: 18px; margin-bottom: 8px; }
-    .card p { font-size: 14px; color: #666; }
 
-    .contact {
-      padding: 80px 40px;
-      text-align: center;
+    .demo-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--card-accent, var(--accent));
+      opacity: 0;
+      transition: opacity 0.2s;
     }
-    .contact h2 { font-size: 32px; margin-bottom: 16px; }
-    .contact p { font-size: 18px; color: #555; margin-bottom: 8px; }
 
-    footer {
-      background: #1a1a2e;
-      color: #aaa;
-      text-align: center;
-      padding: 24px;
+    .demo-card:hover {
+      border-color: #333;
+      transform: translateY(-2px);
+    }
+
+    .demo-card:hover::before { opacity: 1; }
+
+    .card-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .card-desc {
       font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .card-arrow {
+      margin-top: auto;
+      font-size: 13px;
+      color: var(--card-accent, var(--accent));
+      font-weight: 500;
+    }
+
+    .card-1 { --card-accent: #00e5a0; }
+    .card-2 { --card-accent: #0066ff; }
+    .card-3 { --card-accent: #ff6b35; }
+    .card-4 { --card-accent: #a855f7; }
+
+    .bottom-bar {
+      padding: 28px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 12px;
+    }
+
+    .bottom-bar p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .bottom-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .bottom-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .bottom-links a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      header { padding: 20px 20px; }
+      main { padding: 48px 20px 40px; }
+      .bottom-bar { padding: 20px; flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <div class="logo">SwiftFix Plumbing</div>
-    <div>
-      <a href="#">Home</a>
-      <a href="#">Services</a>
-      <a href="#">Contact</a>
+  <header>
+    <div class="logo">Demo<span>Hub</span></div>
+    <a href="05_contact.html" class="contact-btn">Get in touch</a>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="tag">Live Demos</div>
+      <h1>See the<br><em>automation</em><br>work.</h1>
+      <p class="subtitle">Real tools built for real businesses. Try each demo below using your own data and see the result delivered instantly.</p>
     </div>
-  </nav>
 
-  <section class="hero">
-    <h1>Fast, Reliable Plumbing Services</h1>
-    <p>Available 24/7 for emergencies. Serving the local area since 2010.</p>
-    <button>Book a Service</button>
-  </section>
+    <p class="demos-label">Choose a demo</p>
 
-  <section class="services">
-    <h2>What We Do</h2>
-    <div class="cards">
-      <div class="card">
-        <div class="icon">🔧</div>
-        <h3>Leak Repairs</h3>
-        <p>Fast diagnosis and repair for any leak, big or small.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🚿</div>
-        <h3>Bathroom Fitting</h3>
-        <p>Full bathroom installations and upgrades.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🏠</div>
-        <h3>Drain Cleaning</h3>
-        <p>Blocked drains cleared quickly and cleanly.</p>
-      </div>
+    <div class="demos-grid">
+
+      <a href="02_chat.html" class="demo-card card-1">
+        <div class="card-icon">💬</div>
+        <div class="card-title">AI Chat Widget</div>
+        <p class="card-desc">A smart chat assistant embedded on your website. Handles FAQs, collects leads, and books appointments 24/7.</p>
+        <div class="card-arrow">Try live demo →</div>
+      </a>
+
+      <a href="03_receptionist.html" class="demo-card card-2">
+        <div class="card-icon">📞</div>
+        <div class="card-title">AI Voice Receptionist</div>
+        <p class="card-desc">Call a real AI agent. It answers, handles questions, and books appointments directly into your calendar.</p>
+        <div class="card-arrow">Call now →</div>
+      </a>
+
+      <a href="04_report.html" class="demo-card card-3">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Monthly Report Generator</div>
+        <p class="card-desc">Enter your month's data. Get a structured business report generated and delivered to your inbox instantly.</p>
+        <div class="card-arrow">Generate report →</div>
+      </a>
+
+      <a href="05_invoice.html" class="demo-card card-4">
+        <div class="card-icon">🧾</div>
+        <div class="card-title">Invoice + Payment Reminder</div>
+        <p class="card-desc">Fill in the job details. Get a professional invoice sent instantly, with an automatic follow-up reminder.</p>
+        <div class="card-arrow">Create invoice →</div>
+      </a>
+
     </div>
-  </section>
+  </main>
 
-  <section class="contact">
-    <h2>Get In Touch</h2>
-    <p>📞 (555) 123-4567</p>
-    <p>📧 hello@swiftfixplumbing.com</p>
-    <p>📍 123 Main Street, Austin TX</p>
-  </section>
-
-  <footer>
-    © 2026 SwiftFix Plumbing. All rights reserved.
-  </footer>
-
-  <script
-  id="retell-widget"
-  src="https://dashboard.retellai.com/retell-widget.js"
-  data-public-key="public_key_8287cee7570f6c9852de3"
-  data-agent-id="agent_dcc7b6da751153e523d4bf378e"
-  data-title="Chat with Aria"
-  data-color="#e94560">
-  </script>
+  <div class="bottom-bar">
+    <p>Built by Vikram Patil &mdash; Automation Consultant</p>
+    <div class="bottom-links">
+      <a href="https://cal.com/vikram-cal/30min" target="_blank">Book a call</a>
+      <a href="05_contact.html">Send requirements</a>
+    </div>
+  </div>
 
 </body>
 </html>
