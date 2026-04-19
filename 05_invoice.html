@@ -335,6 +335,7 @@
           // REPLACE YOUR_APPS_SCRIPT_URL BELOW WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL
           fetch('https://script.google.com/macros/s/AKfycbw-jTtY6aXE_jSuCZu1akGl9bgkziPxc36YKntGYC5OJdH_9t1v3pqC5VLtIxKvPIgZ/exec', {
             method: 'POST',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
               type: 'invoice',
