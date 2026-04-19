@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Report Generator Demo | SwiftFix Plumbing</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --accent: #ff6b35;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--text); text-decoration: none; }
+    .logo span { color: #00e5a0; }
+    .back { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .back:hover { color: var(--text); }
+
+    .demo-bar {
+      background: rgba(255,107,53,0.05);
+      border-bottom: 1px solid rgba(255,107,53,0.1);
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .demo-bar p { font-size: 13px; color: var(--accent); }
+
+    main {
+      flex: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px;
+      width: 100%;
+    }
+
+    .page-tag {
+      display: inline-block;
+      background: rgba(255,107,53,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(255,107,53,0.2);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+
+    .subtitle { font-size: 16px; color: var(--muted); margin-bottom: 40px; max-width: 520px; line-height: 1.6; }
+
+    /* Steps */
+    .step-indicator {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .step.active { color: var(--accent); }
+    .step.done { color: #00e5a0; }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .step-divider { flex: 1; height: 1px; background: var(--border); margin: 0 4px; }
+
+    /* Form */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 24px;
+    }
+
+    .form-card h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .form-card .form-desc { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field-group.single { grid-template-columns: 1fr; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    input, select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 12px 14px;
+      width: 100%;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 24px;
+    }
+
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Results */
+    #result-section { display: none; }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,107,53,0.3);
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 24px;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .result-icon { font-size: 28px; }
+
+    .result-header h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+    .result-header p { font-size: 13px; color: var(--muted); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .metric {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .metric-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+    .metric-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .analysis-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .analysis-box h4 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .analysis-box p { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+    .email-note {
+      padding: 14px 18px;
+      background: rgba(0, 229, 160, 0.05);
+      border: 1px solid rgba(0, 229, 160, 0.15);
+      border-radius: 8px;
+      font-size: 13px;
+      color: #00e5a0;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint {
+      padding: 16px 20px;
+      background: rgba(255,107,53,0.05);
+      border: 1px solid rgba(255,107,53,0.15);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .bottom-nav {
+      padding: 24px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .bottom-nav a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .bottom-nav a:hover { color: var(--text); }
+    .cta-link { background: #00e5a0; color: #000 !important; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 13px !important; }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .demo-bar { padding: 10px 20px; }
+      main { padding: 40px 20px; }
+      .form-card { padding: 24px 20px; }
+      .field-group { grid-template-columns: 1fr; }
+      .bottom-nav { padding: 20px; }
+      .step span:not(.step-num) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="01_index.html" class="logo">Demo<span>Hub</span></a>
+    <a href="01_index.html" class="back">← All demos</a>
+  </header>
+
+  <div class="demo-bar">
+    <div class="demo-dot"></div>
+    <p>Live demo — fill in the form and receive your report instantly</p>
+  </div>
+
+  <main>
+    <div class="page-tag">Demo 3 of 4</div>
+    <h1>Monthly Report Generator</h1>
+    <p class="subtitle">Enter SwiftFix Plumbing's monthly data below. A structured business report will appear on screen instantly, and gets sent to your email if you provide one.</p>
+
+    <div class="step-indicator">
+      <div class="step active" id="step1">
+        <span class="step-num">1</span>
+        <span>Enter data</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" id="step2">
+        <span class="step-num">2</span>
+        <span>Generate report</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" id="step3">
+        <span class="step-num">3</span>
+        <span>View results</span>
+      </div>
+    </div>
+
+    <!-- FORM SECTION -->
+    <div id="form-section">
+      <div class="form-card">
+        <h2>Business details</h2>
+        <p class="form-desc">Use real or made-up numbers. This is a demo.</p>
+
+        <div class="field-group">
+          <div class="field">
+            <label>Business name</label>
+            <input type="text" id="bizName" placeholder="SwiftFix Plumbing" value="SwiftFix Plumbing">
+          </div>
+          <div class="field">
+            <label>Report month</label>
+            <input type="month" id="reportMonth">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Monthly numbers</p>
+
+        <div class="field-group">
+          <div class="field">
+            <label>Jobs completed</label>
+            <input type="number" id="jobsCompleted" placeholder="42" min="0">
+          </div>
+          <div class="field">
+            <label>Total revenue ($)</label>
+            <input type="number" id="revenue" placeholder="18500" min="0">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field">
+            <label>Total expenses ($)</label>
+            <input type="number" id="expenses" placeholder="6200" min="0">
+          </div>
+          <div class="field">
+            <label>New customers</label>
+            <input type="number" id="newCustomers" placeholder="14" min="0">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field">
+            <label>Top service this month</label>
+            <select id="topService">
+              <option value="Leak Repairs">Leak Repairs</option>
+              <option value="Drain Cleaning">Drain Cleaning</option>
+              <option value="Bathroom Fitting">Bathroom Fitting</option>
+              <option value="Emergency Callouts">Emergency Callouts</option>
+              <option value="Water Heater Repairs">Water Heater Repairs</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Jobs from repeat customers</label>
+            <input type="number" id="repeatJobs" placeholder="18" min="0">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Optional — get report by email</p>
+
+        <div class="field-group single">
+          <div class="field">
+            <label>Your email (optional)</label>
+            <input type="email" id="userEmail" placeholder="you@example.com">
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="generateReport()">Generate my report →</button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loading-section">
+      <div class="spinner"></div>
+      <p>Generating your report...</p>
+    </div>
+
+    <!-- RESULT SECTION -->
+    <div id="result-section">
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-icon">📊</div>
+          <div>
+            <h2 id="result-title">Monthly Business Report</h2>
+            <p id="result-subtitle">Generated instantly</p>
+          </div>
+        </div>
+
+        <div class="metrics-grid" id="metrics-grid"></div>
+
+        <div class="analysis-box">
+          <h4>Performance summary</h4>
+          <p id="analysis-text"></p>
+        </div>
+
+        <div class="analysis-box">
+          <h4>Key insight</h4>
+          <p id="insight-text"></p>
+        </div>
+
+        <div class="email-note" id="email-confirm" style="display:none;"></div>
+      </div>
+
+      <button class="submit-btn" onclick="resetForm()" style="background:#1e1e1e;color:var(--text);margin-bottom:24px;">← Try again with different data</button>
+    </div>
+
+    <div class="hint">
+      Want automated monthly reports for your business? <a href="https://cal.com/vikram-cal/30min" target="_blank" style="color:inherit;font-weight:600;">Book a 20-min call</a> — zero software cost.
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <a href="03_receptionist.html">← AI Receptionist</a>
+    <a href="05_invoice.html">Next: Invoice Generator →</a>
+    <a href="https://cal.com/vikram-cal/30min" target="_blank" class="cta-link">Book a call</a>
+  </div>
+
+  <script>
+    // Set current month as default
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    document.getElementById('reportMonth').value = `${y}-${m}`;
+
+    function generateReport() {
+      const bizName = document.getElementById('bizName').value || 'Your Business';
+      const reportMonth = document.getElementById('reportMonth').value;
+      const jobs = parseInt(document.getElementById('jobsCompleted').value) || 0;
+      const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+      const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+      const newCustomers = parseInt(document.getElementById('newCustomers').value) || 0;
+      const topService = document.getElementById('topService').value;
+      const repeatJobs = parseInt(document.getElementById('repeatJobs').value) || 0;
+      const email = document.getElementById('userEmail').value;
+
+      if (!jobs && !revenue) {
+        alert('Please enter at least jobs completed and total revenue.');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('loading-section').style.display = 'block';
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+
+      setTimeout(() => {
+        document.getElementById('loading-section').style.display = 'none';
+        document.getElementById('result-section').style.display = 'block';
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step2').classList.add('done');
+        document.getElementById('step3').classList.add('active');
+
+        // Calculate metrics
+        const profit = revenue - expenses;
+        const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
+        const avgJobValue = jobs > 0 ? (revenue / jobs).toFixed(0) : 0;
+        const repeatRate = jobs > 0 ? ((repeatJobs / jobs) * 100).toFixed(0) : 0;
+
+        // Format month
+        const monthDate = new Date(reportMonth + '-01');
+        const monthLabel = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+        // Set titles
+        document.getElementById('result-title').textContent = `${bizName} — ${monthLabel}`;
+        document.getElementById('result-subtitle').textContent = 'Monthly performance report';
+
+        // Metrics
+        const metricsGrid = document.getElementById('metrics-grid');
+        metricsGrid.innerHTML = `
+          <div class="metric"><div class="metric-value">${jobs}</div><div class="metric-label">Jobs Completed</div></div>
+          <div class="metric"><div class="metric-value">$${revenue.toLocaleString()}</div><div class="metric-label">Total Revenue</div></div>
+          <div class="metric"><div class="metric-value">$${profit.toLocaleString()}</div><div class="metric-label">Net Profit</div></div>
+          <div class="metric"><div class="metric-value">${margin}%</div><div class="metric-label">Profit Margin</div></div>
+          <div class="metric"><div class="metric-value">$${avgJobValue}</div><div class="metric-label">Avg Job Value</div></div>
+          <div class="metric"><div class="metric-value">${newCustomers}</div><div class="metric-label">New Customers</div></div>
+        `;
+
+        // Analysis
+        let analysis = `${bizName} completed ${jobs} jobs in ${monthLabel}, generating $${revenue.toLocaleString()} in revenue against $${expenses.toLocaleString()} in expenses. `;
+        analysis += `Net profit came in at $${profit.toLocaleString()}, representing a ${margin}% margin. `;
+        analysis += `${topService} was the top performing service this month. `;
+        analysis += `${newCustomers} new customers were acquired, with ${repeatJobs} jobs (${repeatRate}%) coming from returning clients.`;
+        document.getElementById('analysis-text').textContent = analysis;
+
+        // Insight
+        let insight = '';
+        if (parseFloat(margin) >= 40) {
+          insight = `Strong margin at ${margin}%. The business is running efficiently. Focus on increasing average job value to grow revenue without increasing workload.`;
+        } else if (parseFloat(margin) >= 20) {
+          insight = `Margin of ${margin}% is healthy. Reducing material or labour costs by 10% would add approximately $${(expenses * 0.1).toFixed(0)} directly to profit.`;
+        } else {
+          insight = `Margin of ${margin}% has room to improve. Review the largest expense categories and consider whether job pricing reflects current costs.`;
+        }
+
+        if (parseFloat(repeatRate) >= 40) {
+          insight += ` Repeat customer rate of ${repeatRate}% is strong — existing clients are a reliable revenue base.`;
+        } else {
+          insight += ` Repeat rate of ${repeatRate}% suggests there is opportunity to increase follow-up and retention efforts.`;
+        }
+
+        document.getElementById('insight-text').textContent = insight;
+
+        // Email confirmation
+        if (email) {
+          const emailNote = document.getElementById('email-confirm');
+          emailNote.style.display = 'block';
+          emailNote.textContent = `A copy of this report has been sent to ${email}. Check your inbox.`;
+
+          // Send to Apps Script
+          // REPLACE YOUR_APPS_SCRIPT_URL BELOW WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL
+          fetch('YOUR_APPS_SCRIPT_URL', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'report',
+              bizName, monthLabel, jobs, revenue, expenses, profit, margin,
+              avgJobValue, newCustomers, topService, repeatJobs, repeatRate,
+              analysis, insight, email
+            })
+          }).catch(() => {});
+        }
+
+      }, 2000);
+    }
+
+    function resetForm() {
+      document.getElementById('form-section').style.display = 'block';
+      document.getElementById('result-section').style.display = 'none';
+      document.getElementById('step1').classList.add('active');
+      document.getElementById('step2').classList.remove('active', 'done');
+      document.getElementById('step3').classList.remove('active');
+    }
+  </script>
+
+</body>
+</html>

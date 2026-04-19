@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Voice Receptionist Demo | SwiftFix Plumbing</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --accent: #0066ff;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span { color: #00e5a0; }
+
+    .back { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .back:hover { color: var(--text); }
+
+    .demo-bar {
+      background: rgba(0,102,255,0.05);
+      border-bottom: 1px solid rgba(0,102,255,0.1);
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .demo-bar p { font-size: 13px; color: var(--accent); }
+
+    main {
+      flex: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px;
+      width: 100%;
+    }
+
+    .page-tag {
+      display: inline-block;
+      background: rgba(0,102,255,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0,102,255,0.2);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    .call-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .call-visual {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(0,102,255,0.1);
+      border: 2px solid rgba(0,102,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 24px;
+    }
+
+    .call-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .call-card p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .phone-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .phone-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .call-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      padding: 16px 36px;
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .call-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+    .limit-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .what-to-try {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+
+    .what-to-try h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .try-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .try-list li {
+      font-size: 14px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .try-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .feature-icon { font-size: 20px; margin-bottom: 8px; }
+    .feature h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .feature p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .hint {
+      padding: 16px 20px;
+      background: rgba(0,102,255,0.05);
+      border: 1px solid rgba(0,102,255,0.15);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .bottom-nav {
+      padding: 24px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .bottom-nav a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .bottom-nav a:hover { color: var(--text); }
+
+    .cta-link {
+      background: #00e5a0;
+      color: #000 !important;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px !important;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .demo-bar { padding: 10px 20px; }
+      main { padding: 40px 20px; }
+      .call-card { padding: 32px 20px; }
+      .bottom-nav { padding: 20px; }
+      .phone-number { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="01_index.html" class="logo">Demo<span>Hub</span></a>
+    <a href="01_index.html" class="back">← All demos</a>
+  </header>
+
+  <div class="demo-bar">
+    <div class="demo-dot"></div>
+    <p>Live demo — call the number below to speak with Aria, the AI receptionist</p>
+  </div>
+
+  <main>
+    <div class="page-tag">Demo 2 of 4</div>
+    <h1>AI Voice Receptionist</h1>
+    <p class="subtitle">Call the number below. Aria will answer, handle your questions, and book an appointment. This is a real AI agent — no scripts, no pre-recorded messages.</p>
+
+    <div class="call-card">
+      <div class="call-visual">📞</div>
+      <h2>SwiftFix Plumbing Receptionist</h2>
+      <p>Call now to speak with Aria. She handles calls for SwiftFix Plumbing and can answer questions, check availability, and book appointments.</p>
+      <!-- REPLACE WITH YOUR RETELL PHONE NUMBER BELOW -->
+      <div class="phone-number">YOUR_RETELL_PHONE_NUMBER</div>
+      <p class="phone-note">US number &mdash; calls limited to 2 minutes for demo purposes</p>
+      <a href="tel:YOUR_RETELL_PHONE_NUMBER" class="call-btn">
+        📞 Call Aria now
+      </a>
+      <p class="limit-note">Demo calls are limited to 2 minutes. International callers may incur standard rates.</p>
+    </div>
+
+    <div class="what-to-try">
+      <h3>Things to try</h3>
+      <ul class="try-list">
+        <li>Ask about services and pricing</li>
+        <li>Ask if they're available this week</li>
+        <li>Say you want to book a repair and see what she asks</li>
+        <li>Ask about emergency availability</li>
+      </ul>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🕐</div>
+        <h4>Never misses a call</h4>
+        <p>Answers every call instantly, day or night.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📅</div>
+        <h4>Books appointments</h4>
+        <p>Connects to your calendar and books directly.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔧</div>
+        <h4>Customised to your business</h4>
+        <p>Knows your services, prices, and hours.</p>
+      </div>
+    </div>
+
+    <div class="hint">
+      Want this for your business? <a href="https://cal.com/vikram-cal/30min" target="_blank" style="color:inherit;font-weight:600;">Book a 20-min call</a> and I'll build it for you.
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <a href="02_chat.html">← Chat Widget</a>
+    <a href="04_report.html">Next: Report Generator →</a>
+    <a href="https://cal.com/vikram-cal/30min" target="_blank" class="cta-link">Book a call</a>
+  </div>
+
+</body>
+</html>

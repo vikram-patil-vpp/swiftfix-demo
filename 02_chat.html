@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat Widget Demo | SwiftFix Plumbing</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --accent: #00e5a0;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .back {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back:hover { color: var(--text); }
+
+    .demo-bar {
+      background: rgba(0,229,160,0.05);
+      border-bottom: 1px solid rgba(0,229,160,0.1);
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .demo-bar p { font-size: 13px; color: var(--accent); }
+
+    main {
+      flex: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 24px;
+      width: 100%;
+    }
+
+    .page-tag {
+      display: inline-block;
+      background: rgba(0,229,160,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0,229,160,0.2);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    /* Business site simulation */
+    .site-preview {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .site-nav {
+      background: #1a1a2e;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .site-nav .brand { color: white; font-weight: 600; font-size: 16px; }
+    .site-nav-links { display: flex; gap: 20px; }
+    .site-nav-links a { color: #aaa; text-decoration: none; font-size: 13px; }
+
+    .site-hero {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      padding: 64px 28px;
+      text-align: center;
+    }
+
+    .site-hero h2 { font-size: clamp(22px, 4vw, 36px); margin-bottom: 12px; }
+    .site-hero p { font-size: 15px; color: #aaa; margin-bottom: 24px; }
+
+    .site-btn {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .site-services {
+      background: #f9f9f9;
+      padding: 48px 28px;
+      text-align: center;
+    }
+
+    .site-services h3 { font-size: 22px; color: #222; margin-bottom: 28px; }
+
+    .cards-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .svc-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px 16px;
+      width: 160px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .svc-card .ic { font-size: 28px; margin-bottom: 8px; }
+    .svc-card h4 { font-size: 14px; color: #222; margin-bottom: 4px; }
+    .svc-card p { font-size: 12px; color: #888; }
+
+    .site-footer {
+      background: #1a1a2e;
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+    }
+
+    /* What it does section */
+    .features {
+      margin-top: 48px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .feature-icon { font-size: 22px; margin-bottom: 10px; }
+    .feature h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .feature p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .hint {
+      margin-top: 32px;
+      padding: 16px 20px;
+      background: rgba(0,229,160,0.05);
+      border: 1px solid rgba(0,229,160,0.15);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .bottom-nav {
+      padding: 24px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .bottom-nav a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .bottom-nav a:hover { color: var(--text); }
+
+    .cta-link {
+      background: var(--accent);
+      color: #000 !important;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px !important;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .demo-bar { padding: 10px 20px; }
+      main { padding: 40px 20px; }
+      .bottom-nav { padding: 20px; }
+      .site-nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="01_index.html" class="logo">Demo<span>Hub</span></a>
+    <a href="01_index.html" class="back">← All demos</a>
+  </header>
+
+  <div class="demo-bar">
+    <div class="demo-dot"></div>
+    <p>Live demo — click the chat bubble in the bottom right corner to try it</p>
+  </div>
+
+  <main>
+    <div class="page-tag">Demo 1 of 4</div>
+    <h1>AI Chat Widget</h1>
+    <p class="subtitle">This widget is embedded on the SwiftFix Plumbing demo site below. Click the chat bubble in the bottom right to talk to Aria. Try asking about services, pricing, or booking an appointment.</p>
+
+    <div class="site-preview">
+      <div class="site-nav">
+        <div class="brand">SwiftFix Plumbing</div>
+        <div class="site-nav-links">
+          <a href="#">Home</a>
+          <a href="#">Services</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+      <div class="site-hero">
+        <h2>Fast, Reliable Plumbing Services</h2>
+        <p>Available 24/7 for emergencies. Serving Austin, TX since 2010.</p>
+        <button class="site-btn">Book a Service</button>
+      </div>
+      <div class="site-services">
+        <h3>What We Do</h3>
+        <div class="cards-row">
+          <div class="svc-card">
+            <div class="ic">🔧</div>
+            <h4>Leak Repairs</h4>
+            <p>Fast diagnosis and fix.</p>
+          </div>
+          <div class="svc-card">
+            <div class="ic">🚿</div>
+            <h4>Bathroom Fitting</h4>
+            <p>Full installations.</p>
+          </div>
+          <div class="svc-card">
+            <div class="ic">🏠</div>
+            <h4>Drain Cleaning</h4>
+            <p>Cleared quickly.</p>
+          </div>
+        </div>
+      </div>
+      <div class="site-footer">© 2026 SwiftFix Plumbing. All rights reserved.</div>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🕐</div>
+        <h4>Available 24/7</h4>
+        <p>Answers questions and books jobs even when you're not at the phone.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📋</div>
+        <h4>Collects lead details</h4>
+        <p>Name, number, and preferred time — all captured automatically.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💰</div>
+        <h4>Pay per use</h4>
+        <p>No monthly software fee. You only pay for actual conversations.</p>
+      </div>
+    </div>
+
+    <div class="hint">
+      Want this on your website? <a href="https://cal.com/vikram-cal/30min" target="_blank" style="color:inherit;font-weight:600;">Book a 20-min call</a> and I'll set it up for you.
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <a href="01_index.html">← Back to demos</a>
+    <a href="03_receptionist.html">Next: AI Receptionist →</a>
+    <a href="https://cal.com/vikram-cal/30min" target="_blank" class="cta-link">Book a call</a>
+  </div>
+
+  <!-- RETELL CHAT WIDGET -->
+  <script
+    id="retell-widget"
+    src="https://dashboard.retellai.com/retell-widget.js"
+    data-public-key="public_key_73321158107ffb2cabcee"
+    data-agent-id="agent_dcc7b6da751153e523d4bf378e"
+    data-title="Chat with Aria"
+    data-color="#00e5a0">
+  </script>
+
+</body>
+</html>

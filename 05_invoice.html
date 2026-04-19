@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice + Payment Reminder Demo | SwiftFix Plumbing</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --accent: #a855f7;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header { padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--text); text-decoration: none; }
+    .logo span { color: #00e5a0; }
+    .back { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .back:hover { color: var(--text); }
+
+    .demo-bar { background: rgba(168,85,247,0.05); border-bottom: 1px solid rgba(168,85,247,0.1); padding: 10px 40px; display: flex; align-items: center; gap: 10px; }
+    .demo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .demo-bar p { font-size: 13px; color: var(--accent); }
+
+    main { flex: 1; max-width: 760px; margin: 0 auto; padding: 60px 24px; width: 100%; }
+
+    .page-tag { display: inline-block; background: rgba(168,85,247,0.1); color: var(--accent); border: 1px solid rgba(168,85,247,0.2); padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+    .subtitle { font-size: 16px; color: var(--muted); margin-bottom: 40px; max-width: 520px; line-height: 1.6; }
+
+    .step-indicator { display: flex; gap: 8px; margin-bottom: 32px; align-items: center; }
+    .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+    .step.active { color: var(--accent); }
+    .step.done { color: #00e5a0; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; border: 1px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .step-divider { flex: 1; height: 1px; background: var(--border); margin: 0 4px; }
+
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
+    .form-card h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .form-card .form-desc { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+    .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .field-group.single { grid-template-columns: 1fr; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 12px 14px; width: 100%; transition: border-color 0.2s; -webkit-appearance: none; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    .submit-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; margin-top: 24px; }
+    .submit-btn:hover { opacity: 0.9; }
+
+    .loading { display: none; text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+    .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #result-section { display: none; }
+
+    /* Invoice preview */
+    .invoice-preview {
+      background: white;
+      color: #111;
+      border-radius: 12px;
+      padding: 40px;
+      margin-bottom: 20px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+    .inv-company h3 { font-size: 20px; font-weight: 700; color: #111; }
+    .inv-company p { font-size: 13px; color: #666; margin-top: 4px; }
+    .inv-badge { background: #a855f7; color: white; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+
+    .inv-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #eee; }
+    .inv-meta-group { display: flex; flex-direction: column; gap: 4px; }
+    .inv-meta-group .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .inv-meta-group .value { font-size: 14px; color: #111; font-weight: 500; }
+
+    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .inv-table th { text-align: left; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .inv-table td { padding: 12px 0; font-size: 14px; color: #111; border-bottom: 1px solid #f5f5f5; }
+    .inv-table td:last-child { text-align: right; font-weight: 500; }
+
+    .inv-total { text-align: right; padding-top: 16px; border-top: 2px solid #111; }
+    .inv-total .label { font-size: 13px; color: #666; }
+    .inv-total .amount { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: #a855f7; }
+
+    .inv-footer { margin-top: 28px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #999; }
+
+    .reminder-note {
+      background: rgba(168,85,247,0.05);
+      border: 1px solid rgba(168,85,247,0.15);
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .email-note { padding: 14px 18px; background: rgba(0,229,160,0.05); border: 1px solid rgba(0,229,160,0.15); border-radius: 8px; font-size: 13px; color: #00e5a0; margin-bottom: 20px; }
+
+    .hint { padding: 16px 20px; background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.15); border-radius: 8px; font-size: 13px; color: var(--accent); margin-bottom: 24px; }
+
+    .bottom-nav { padding: 24px 40px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .bottom-nav a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .bottom-nav a:hover { color: var(--text); }
+    .cta-link { background: #00e5a0; color: #000 !important; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 13px !important; }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .demo-bar { padding: 10px 20px; }
+      main { padding: 40px 20px; }
+      .form-card { padding: 24px 20px; }
+      .field-group { grid-template-columns: 1fr; }
+      .bottom-nav { padding: 20px; }
+      .step span:not(.step-num) { display: none; }
+      .invoice-preview { padding: 24px 16px; }
+      .inv-header { flex-direction: column; gap: 12px; }
+      .inv-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="01_index.html" class="logo">Demo<span>Hub</span></a>
+    <a href="01_index.html" class="back">← All demos</a>
+  </header>
+
+  <div class="demo-bar">
+    <div class="demo-dot"></div>
+    <p>Live demo — fill in job details and get a professional invoice instantly</p>
+  </div>
+
+  <main>
+    <div class="page-tag">Demo 4 of 4</div>
+    <h1>Invoice + Payment Reminder</h1>
+    <p class="subtitle">Fill in the job details below. You'll get a professional invoice on screen instantly, plus an automatic payment reminder 3 days later if you enter your email.</p>
+
+    <div class="step-indicator">
+      <div class="step active" id="step1"><span class="step-num">1</span><span>Job details</span></div>
+      <div class="step-divider"></div>
+      <div class="step" id="step2"><span class="step-num">2</span><span>Generate invoice</span></div>
+      <div class="step-divider"></div>
+      <div class="step" id="step3"><span class="step-num">3</span><span>Invoice ready</span></div>
+    </div>
+
+    <div id="form-section">
+      <div class="form-card">
+        <h2>Job details</h2>
+        <p class="form-desc">Use real or made-up data. This is a demo.</p>
+
+        <div class="field-group">
+          <div class="field">
+            <label>Client name</label>
+            <input type="text" id="clientName" placeholder="John Smith">
+          </div>
+          <div class="field">
+            <label>Client email (optional)</label>
+            <input type="email" id="clientEmail" placeholder="client@example.com">
+          </div>
+        </div>
+
+        <div class="field-group single">
+          <div class="field">
+            <label>Service description</label>
+            <textarea id="serviceDesc" placeholder="Leak repair — kitchen sink, replaced pipe under basin"></textarea>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field">
+            <label>Amount ($)</label>
+            <input type="number" id="amount" placeholder="350" min="0">
+          </div>
+          <div class="field">
+            <label>Due date</label>
+            <input type="date" id="dueDate">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Optional — get invoice by email + reminder</p>
+
+        <div class="field-group single">
+          <div class="field">
+            <label>Your email (to receive invoice)</label>
+            <input type="email" id="yourEmail" placeholder="you@example.com">
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="generateInvoice()">Create invoice →</button>
+      </div>
+    </div>
+
+    <div class="loading" id="loading-section">
+      <div class="spinner"></div>
+      <p>Creating your invoice...</p>
+    </div>
+
+    <div id="result-section">
+      <div class="invoice-preview" id="invoice-preview"></div>
+
+      <div class="reminder-note">
+        🔔 A payment reminder will be sent automatically 3 days after the due date if the invoice is unpaid. This keeps you from having to chase clients manually.
+      </div>
+
+      <div class="email-note" id="email-confirm" style="display:none;"></div>
+
+      <button class="submit-btn" onclick="resetForm()" style="background:#1e1e1e;color:var(--text);margin-bottom:24px;">← Create another invoice</button>
+    </div>
+
+    <div class="hint">
+      Want automated invoicing for your business? <a href="https://cal.com/vikram-cal/30min" target="_blank" style="color:inherit;font-weight:600;">Book a 20-min call</a> — zero ongoing software cost.
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <a href="04_report.html">← Report Generator</a>
+    <a href="01_index.html">← All demos</a>
+    <a href="https://cal.com/vikram-cal/30min" target="_blank" class="cta-link">Book a call</a>
+  </div>
+
+  <script>
+    // Set default due date to 7 days from now
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    document.getElementById('dueDate').value = d.toISOString().split('T')[0];
+
+    function generateInvoice() {
+      const clientName = document.getElementById('clientName').value || 'Client';
+      const clientEmail = document.getElementById('clientEmail').value;
+      const serviceDesc = document.getElementById('serviceDesc').value || 'Plumbing service';
+      const amount = parseFloat(document.getElementById('amount').value) || 0;
+      const dueDate = document.getElementById('dueDate').value;
+      const yourEmail = document.getElementById('yourEmail').value;
+
+      if (!amount) { alert('Please enter an amount.'); return; }
+
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('loading-section').style.display = 'block';
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+
+      setTimeout(() => {
+        document.getElementById('loading-section').style.display = 'none';
+        document.getElementById('result-section').style.display = 'block';
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step2').classList.add('done');
+        document.getElementById('step3').classList.add('active');
+
+        const invoiceNum = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+        const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const dueDateFormatted = dueDate ? new Date(dueDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'On receipt';
+        const gst = (amount * 0.1).toFixed(2);
+        const total = (amount * 1.1).toFixed(2);
+
+        document.getElementById('invoice-preview').innerHTML = `
+          <div class="inv-header">
+            <div class="inv-company">
+              <h3>SwiftFix Plumbing</h3>
+              <p>123 Main Street, Austin TX<br>(555) 123-4567 · hello@swiftfixplumbing.com</p>
+            </div>
+            <div class="inv-badge">INVOICE</div>
+          </div>
+
+          <div class="inv-meta">
+            <div class="inv-meta-group">
+              <span class="label">Invoice number</span>
+              <span class="value">${invoiceNum}</span>
+            </div>
+            <div class="inv-meta-group">
+              <span class="label">Date issued</span>
+              <span class="value">${today}</span>
+            </div>
+            <div class="inv-meta-group">
+              <span class="label">Billed to</span>
+              <span class="value">${clientName}${clientEmail ? '<br><span style="font-size:12px;color:#666;">' + clientEmail + '</span>' : ''}</span>
+            </div>
+            <div class="inv-meta-group">
+              <span class="label">Payment due</span>
+              <span class="value">${dueDateFormatted}</span>
+            </div>
+          </div>
+
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${serviceDesc}</td>
+                <td>1</td>
+                <td>$${amount.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td style="color:#999;font-size:13px;">GST (10%)</td>
+                <td></td>
+                <td>$${gst}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="inv-total">
+            <div class="label">Total due</div>
+            <div class="amount">$${total}</div>
+          </div>
+
+          <div class="inv-footer">
+            Payment due by ${dueDateFormatted}. Bank transfer preferred. Thank you for choosing SwiftFix Plumbing.
+          </div>
+        `;
+
+        if (yourEmail) {
+          const emailNote = document.getElementById('email-confirm');
+          emailNote.style.display = 'block';
+          emailNote.textContent = `Invoice sent to ${yourEmail}. A payment reminder will be sent automatically 3 days after the due date.`;
+
+          // Send to Apps Script
+          // REPLACE YOUR_APPS_SCRIPT_URL BELOW WITH YOUR DEPLOYED APPS SCRIPT WEB APP URL
+          fetch('YOUR_APPS_SCRIPT_URL', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'invoice',
+              invoiceNum, clientName, clientEmail, serviceDesc,
+              amount, gst, total: parseFloat(total),
+              dueDate, dueDateFormatted, yourEmail
+            })
+          }).catch(() => {});
+        }
+
+      }, 1800);
+    }
+
+    function resetForm() {
+      document.getElementById('form-section').style.display = 'block';
+      document.getElementById('result-section').style.display = 'none';
+      document.getElementById('step1').classList.add('active');
+      document.getElementById('step2').classList.remove('active', 'done');
+      document.getElementById('step3').classList.remove('active');
+    }
+  </script>
+
+</body>
+</html>
